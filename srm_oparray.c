@@ -21,6 +21,7 @@
 #include "ext/standard/url.h"
 #include "set.h"
 #include "php_vld.h"
+#include "string.h"
 
 ZEND_EXTERN_MODULE_GLOBALS(vld)
 
@@ -257,17 +258,17 @@ static const op_usage opcodes[] = {
 
 static inline int vld_dump_zval_null(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "null");
+	return vld_printf(stderr, "null");
 }
 
 static inline int vld_dump_zval_long(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "%ld", value.lval);
+	return vld_printf(stderr, "%ld", value.lval);
 }
 
 static inline int vld_dump_zval_double(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "%g", value.dval);
+	return vld_printf(stderr, "%g", value.dval);
 }
 
 static inline int vld_dump_zval_string(ZVAL_VALUE_TYPE value)
@@ -276,74 +277,74 @@ static inline int vld_dump_zval_string(ZVAL_VALUE_TYPE value)
 	int len;
 
 	new_str = php_url_encode(ZVAL_STRING_VALUE(value), ZVAL_STRING_LEN(value) PHP_URLENCODE_NEW_LEN(new_len));
-	len = vld_printf (stderr, "'%s'", ZSTRING_VALUE(new_str));
+	len = vld_printf(stderr, "'%s'", ZSTRING_VALUE(new_str));
 	efree(new_str);
 	return len;
 }
 
 static inline int vld_dump_zval_array(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<array>");
+	return vld_printf(stderr, "<array>");
 }
 
 static inline int vld_dump_zval_object(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<object>");
+	return vld_printf(stderr, "<object>");
 }
 
 static inline int vld_dump_zval_bool(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<bool>");
+	return vld_printf(stderr, "<bool>");
 }
 
 static inline int vld_dump_zval_true(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<true>");
+	return vld_printf(stderr, "<true>");
 }
 
 static inline int vld_dump_zval_false(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<false>");
+	return vld_printf(stderr, "<false>");
 }
 
 static inline int vld_dump_zval_resource(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<resource>");
+	return vld_printf(stderr, "<resource>");
 }
 
 static inline int vld_dump_zval_constant(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<const:'%s'>", ZVAL_STRING_VALUE(value));
+	return vld_printf(stderr, "<const:'%s'>", ZVAL_STRING_VALUE(value));
 }
 
 static inline int vld_dump_zval_constant_ast(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<const ast>");
+	return vld_printf(stderr, "<const ast>");
 }
 
 static inline int vld_dump_zval_undef(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<undef>");
+	return vld_printf(stderr, "<undef>");
 }
 
 static inline int vld_dump_zval_reference(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<reference>");
+	return vld_printf(stderr, "<reference>");
 }
 
 static inline int vld_dump_zval_callable(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<callable>");
+	return vld_printf(stderr, "<callable>");
 }
 
 static inline int vld_dump_zval_indirect(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<indirect>");
+	return vld_printf(stderr, "<indirect>");
 }
 
 static inline int vld_dump_zval_ptr(ZVAL_VALUE_TYPE value)
 {
-	return vld_printf (stderr, "<ptr>");
+	return vld_printf(stderr, "<ptr>");
 }
 
 int vld_dump_zval (zval val)
@@ -378,7 +379,7 @@ int vld_dump_znode (int *print_sep, unsigned int node_type, VLD_ZNODE node, unsi
 
 	if (node_type != IS_UNUSED && print_sep) {
 		if (*print_sep) {
-			len += vld_printf (stderr, ", ");
+			len += vld_printf(stderr, ", ");
 		}
 		*print_sep = 1;
 	}
@@ -397,24 +398,24 @@ int vld_dump_znode (int *print_sep, unsigned int node_type, VLD_ZNODE node, unsi
 
 		case IS_TMP_VAR: /* 2 */
 			VLD_PRINT(3, " IS_TMP_VAR ");
-			len += vld_printf (stderr, "~%d", VAR_NUM(VLD_ZNODE_ELEM(node, var)));
+			len += vld_printf(stderr, "~%d", VAR_NUM(VLD_ZNODE_ELEM(node, var)));
 			break;
 		case IS_VAR: /* 4 */
 			VLD_PRINT(3, " IS_VAR ");
-			len += vld_printf (stderr, "$%d", VAR_NUM(VLD_ZNODE_ELEM(node, var)));
+			len += vld_printf(stderr, "$%d", VAR_NUM(VLD_ZNODE_ELEM(node, var)));
 			break;
 		case IS_CV:  /* 16 */
 			VLD_PRINT(3, " IS_CV ");
-			len += vld_printf (stderr, "!%d", (VLD_ZNODE_ELEM(node, var)-sizeof(zend_execute_data)) / sizeof(zval));
+			len += vld_printf(stderr, "!%d", (VLD_ZNODE_ELEM(node, var)-sizeof(zend_execute_data)) / sizeof(zval));
 			break;
 		case VLD_IS_OPNUM:
-			len += vld_printf (stderr, "->%d", VLD_ZNODE_JMP_LINE(node, opline, base_address));
+			len += vld_printf(stderr, "->%d", VLD_ZNODE_JMP_LINE(node, opline, base_address));
 			break;
 		case VLD_IS_OPLINE:
-			len += vld_printf (stderr, "->%d", VLD_ZNODE_JMP_LINE(node, opline, base_address));
+			len += vld_printf(stderr, "->%d", VLD_ZNODE_JMP_LINE(node, opline, base_address));
 			break;
 		case VLD_IS_CLASS:
-			len += vld_printf (stderr, ":%d", VAR_NUM(VLD_ZNODE_ELEM(node, var)));
+			len += vld_printf(stderr, ":%d", VAR_NUM(VLD_ZNODE_ELEM(node, var)));
 			break;
 #if PHP_VERSION_ID >= 70200
 		case VLD_IS_JMP_ARRAY: {
@@ -431,16 +432,16 @@ int vld_dump_znode (int *print_sep, unsigned int node_type, VLD_ZNODE node, unsi
 #endif
 			myht = Z_ARRVAL_P(array_value);
 
-			len += vld_printf (stderr, "[ ");
+			len += vld_printf(stderr, "[ ");
 			ZEND_HASH_FOREACH_KEY_VAL_IND(myht, num, key, val) {
 				if (key == NULL) {
-					len += vld_printf (stderr, "%d:->%d, ", num, opline + (val->value.lval / sizeof(zend_op)));
+					len += vld_printf(stderr, "%d:->%d, ", num, opline + (val->value.lval / sizeof(zend_op)));
 				} else {
-					len += vld_printf (stderr, "'%s':->%d, ", ZSTRING_VALUE(key), opline + (val->value.lval / sizeof(zend_op)));
+					len += vld_printf(stderr, "'%s':->%d, ", ZSTRING_VALUE(key), opline + (val->value.lval / sizeof(zend_op)));
 				}
 			} ZEND_HASH_FOREACH_END();
 
-			len += vld_printf (stderr, "]");
+			len += vld_printf(stderr, "]");
 		}
 			break;
 #endif
@@ -527,6 +528,11 @@ static unsigned int vld_get_special_flags(const zend_op *op, unsigned int base_a
 }
 
 #define NUM_KNOWN_OPCODES (sizeof(opcodes)/sizeof(opcodes[0]))
+
+char* vld_get_zval_string(ZVAL_VALUE_TYPE value)
+{
+	return ZSTRING_VALUE(php_url_encode(ZVAL_STRING_VALUE(value), ZVAL_STRING_LEN(value) PHP_URLENCODE_NEW_LEN(new_len)));
+}
 
 void vld_dump_op(int nr, zend_op * op_ptr, unsigned int base_address, int notdead, int entry, int start, int end, zend_op_array *opa TSRMLS_DC)
 {
@@ -624,6 +630,48 @@ void vld_dump_op(int nr, zend_op * op_ptr, unsigned int base_address, int notdea
 		}
 	}
 
+	if (VLD_G(webshell_test)) {
+
+	    // Test if any risks in this opcode
+
+		if (!strcmp(opcodes[op.opcode].name, "INIT_DYNAMIC_CALL")) {
+		    VLD_G(risk_num)++;
+
+		} else if (!strcmp(opcodes[op.opcode].name, "INCLUDE_OR_EVAL") && op.extended_value == ZEND_EVAL) {
+            VLD_G(risk_num)++;
+
+		} else if (!strcmp(opcodes[op.opcode].name, "INIT_FCALL") && OP1_USED) {
+#if PHP_VERSION_ID >= 70300
+			zend_value value = RT_CONSTANT((opa->opcodes) + nr, op.op2)->value;
+#elif PHP_VERSION_ID >= 70000
+            zend_value value = RT_CONSTANT_EX(opa->literals, op.op2)->value;
+#endif
+//            vld_printf(stderr, "{%s}", vld_get_zval_string(value));
+			char* function_name = vld_get_zval_string(value);
+			if (!strcmp(function_name, "system") ||
+				!strcmp(function_name, "shell_exec") ||
+				!strcmp(function_name, "fopen") ||
+				!strcmp(function_name, "create_function") ||
+				!strcmp(function_name, "phpinfo")) {
+				VLD_G(risk_num)++;
+			} else if (!strcmp(function_name, "create_function")) {
+
+			}
+
+		}
+	}
+
+    if (VLD_G(webshell_test)) {
+
+        // Print risks count
+
+        if (VLD_G(risk_num)>99) {
+            vld_printf(stderr, "[99+ risks]\t");
+        } else {
+            vld_printf(stderr, "[%-3d risks]\t", VLD_G(risk_num));
+        }
+    }
+
 	if (op.lineno == last_lineno) {
 		vld_printf(stderr, "     ");
 	} else {
@@ -714,19 +762,19 @@ void vld_dump_op(int nr, zend_op * op_ptr, unsigned int base_address, int notdea
 	}
 	if (flags & EXT_VAL_JMP_ABS) {
 		VLD_PRINT(3, " EXT_JMP_ABS[ ");
-		vld_printf (stderr, ", ->%d", op.extended_value);
+		vld_printf(stderr, ", ->%d", op.extended_value);
 		VLD_PRINT(3, " ]");
 	}
 	if (flags & EXT_VAL_JMP_REL) {
 		VLD_PRINT(3, " EXT_JMP_REL[ ");
-		vld_printf (stderr, ", ->%d", nr + ((int) op.extended_value / sizeof(zend_op)));
+		vld_printf(stderr, ", ->%d", nr + ((int) op.extended_value / sizeof(zend_op)));
 		VLD_PRINT(3, " ]");
 	}
 	if (flags & NOP2_OPNUM) {
 		zend_op next_op = op_ptr[nr+1];
 		vld_dump_znode (&print_sep, VLD_IS_OPNUM, next_op.op2, base_address, opa, nr TSRMLS_CC);
 	}
-	vld_printf (stderr, "\n");
+	vld_printf(stderr, "\n");
 }
 
 void vld_analyse_oparray(zend_op_array *opa, vld_set *set, vld_branch_info *branch_info TSRMLS_DC);
@@ -747,18 +795,18 @@ void vld_dump_oparray(zend_op_array *opa TSRMLS_DC)
 		vld_analyse_oparray(opa, set, branch_info TSRMLS_CC);
 	}
 	if (VLD_G(format)) {
-		vld_printf (stderr, "filename:%s%s\n", VLD_G(col_sep), ZSTRING_VALUE(opa->filename));
-		vld_printf (stderr, "function name:%s%s\n", VLD_G(col_sep), ZSTRING_VALUE(opa->function_name));
-		vld_printf (stderr, "number of ops:%s%d\n", VLD_G(col_sep), opa->last);
+		vld_printf(stderr, "filename:%s%s\n", VLD_G(col_sep), ZSTRING_VALUE(opa->filename));
+		vld_printf(stderr, "function name:%s%s\n", VLD_G(col_sep), ZSTRING_VALUE(opa->function_name));
+		vld_printf(stderr, "number of ops:%s%d\n", VLD_G(col_sep), opa->last);
 	} else {
-		vld_printf (stderr, "filename:       %s\n", ZSTRING_VALUE(opa->filename));
-		vld_printf (stderr, "function name:  %s\n", ZSTRING_VALUE(opa->function_name));
-		vld_printf (stderr, "number of ops:  %d\n", opa->last);
+		vld_printf(stderr, "filename:       %s\n", ZSTRING_VALUE(opa->filename));
+		vld_printf(stderr, "function name:  %s\n", ZSTRING_VALUE(opa->function_name));
+		vld_printf(stderr, "number of ops:  %d\n", opa->last);
 	}
 
-	vld_printf (stderr, "compiled vars:  ");
+	vld_printf(stderr, "compiled vars:  ");
 	for (j = 0; j < opa->last_var; j++) {
-		vld_printf (stderr, "!%d = $%s%s", j, OPARRAY_VAR_NAME(opa->vars[j]), ((j + 1) == opa->last_var) ? "\n" : ", ");
+		vld_printf(stderr, "!%d = $%s%s", j, OPARRAY_VAR_NAME(opa->vars[j]), ((j + 1) == opa->last_var) ? "\n" : ", ");
 	}
 	if (!opa->last_var) {
 		vld_printf(stderr, "none\n");
@@ -767,8 +815,13 @@ void vld_dump_oparray(zend_op_array *opa TSRMLS_DC)
 	if (VLD_G(format)) {
 		vld_printf(stderr, "line%s# *%s%s%sop%sfetch%sext%sreturn%soperands\n",VLD_G(col_sep),VLD_G(col_sep),VLD_G(col_sep),VLD_G(col_sep),VLD_G(col_sep),VLD_G(col_sep),VLD_G(col_sep),VLD_G(col_sep));
 	} else {
-		vld_printf(stderr, "line     #* E I O op                           fetch          ext  return  operands\n");
-		vld_printf(stderr, "-------------------------------------------------------------------------------------\n");
+		if (VLD_G(webshell_test)) {
+			vld_printf(stderr, "          |line     #* E I O op                           fetch          ext  return  operands\n");
+			vld_printf(stderr, "          |------------------------------------------------------------------------------------\n");
+		} else {
+			vld_printf(stderr, "line     #* E I O op                           fetch          ext  return  operands\n");
+			vld_printf(stderr, "-------------------------------------------------------------------------------------\n");
+		}
 	}
 	for (i = 0; i < opa->last; i++) {
 		vld_dump_op(i, opa->opcodes, base_address, vld_set_in(set, i), vld_set_in(branch_info->entry_points, i), vld_set_in(branch_info->starts, i), vld_set_in(branch_info->ends, i), opa TSRMLS_CC);

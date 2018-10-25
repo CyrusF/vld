@@ -268,31 +268,33 @@ void vld_branch_info_dump(zend_op_array *opa, vld_branch_info *branch_info TSRML
 		}
 		fprintf(VLD_G(path_dump_file), "}\n");
 	}
+	if (!VLD_G(webshell_test)) {
+		// avoid branch & path
+		for (i = 0; i < branch_info->starts->size; i++) {
+			if (vld_set_in(branch_info->starts, i)) {
+				printf("branch: #%3d; line: %5d-%5d; sop: %5d; eop: %5d",
+					   i,
+					   branch_info->branches[i].start_lineno,
+					   branch_info->branches[i].end_lineno,
+					   i,
+					   branch_info->branches[i].end_op
+				);
 
-	for (i = 0; i < branch_info->starts->size; i++) {
-		if (vld_set_in(branch_info->starts, i)) {
-			printf("branch: #%3d; line: %5d-%5d; sop: %5d; eop: %5d",
-				i,
-				branch_info->branches[i].start_lineno,
-				branch_info->branches[i].end_lineno,
-				i,
-				branch_info->branches[i].end_op
-			);
-
-			for (j = 0; j < branch_info->branches[i].outs_count; j++) {
-				if (branch_info->branches[i].outs[j]) {
-					printf("; out%d: %3d", j, branch_info->branches[i].outs[j]);
+				for (j = 0; j < branch_info->branches[i].outs_count; j++) {
+					if (branch_info->branches[i].outs[j]) {
+						printf("; out%d: %3d", j, branch_info->branches[i].outs[j]);
+					}
 				}
+				printf("\n");
+			}
+		}
+
+		for (i = 0; i < branch_info->paths_count; i++) {
+			printf("path #%d: ", i + 1);
+			for (j = 0; j < branch_info->paths[i]->elements_count; j++) {
+				printf("%d, ", branch_info->paths[i]->elements[j]);
 			}
 			printf("\n");
 		}
-	}
-
-	for (i = 0; i < branch_info->paths_count; i++) {
-		printf("path #%d: ", i + 1);
-		for (j = 0; j < branch_info->paths[i]->elements_count; j++) {
-			printf("%d, ", branch_info->paths[i]->elements[j]);
-		}
-		printf("\n");
 	}
 }

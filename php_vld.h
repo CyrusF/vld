@@ -29,6 +29,28 @@ extern zend_module_entry vld_module_entry;
 #include "TSRM.h"
 #endif
 
+#define MAX_FUNC_STACK_SIZE 65536
+#define MAX_VAR_STACK_SIZE 1048576
+
+typedef struct {
+	int   		id;
+	char* 		name;
+} func_item;
+typedef struct {
+	int			head;
+	func_item	stack[MAX_FUNC_STACK_SIZE];
+} func_stack;
+
+typedef struct {
+	int			ns_id; // id of func_item in which namespace
+	char*		name;
+} var_item;
+
+typedef struct {
+	int			head;
+	var_item	stack[MAX_VAR_STACK_SIZE];
+} var_stack;
+
 PHP_MINIT_FUNCTION(vld);
 PHP_MSHUTDOWN_FUNCTION(vld);
 PHP_RINIT_FUNCTION(vld);
@@ -47,6 +69,8 @@ ZEND_BEGIN_MODULE_GLOBALS(vld)
 	char *save_dir;
 	FILE *path_dump_file;
 	int dump_paths;
+	int webshell_test;
+	int risk_num;
 ZEND_END_MODULE_GLOBALS(vld) 
 
 int vld_printf(FILE *stream, const char* fmt, ...);
@@ -56,9 +80,9 @@ int vld_printf(FILE *stream, const char* fmt, ...);
 #else
 #define VLD_G(v) (vld_globals.v)
 #endif
-#define VLD_PRINT(v,args) if (VLD_G(verbosity) >= (v)) { vld_printf(stderr, args); }
-#define VLD_PRINT1(v,args,x) if (VLD_G(verbosity) >= (v)) { vld_printf(stderr, args, (x)); }
-#define VLD_PRINT2(v,args,x,y) if (VLD_G(verbosity) >= (v)) { vld_printf(stderr, args, (x), (y)); }
+#define VLD_PRINT(v,args) if (VLD_G(verbosity) >= (v) && !VLD_G(webshell_test)) { vld_printf(stderr, args); }
+#define VLD_PRINT1(v,args,x) if (VLD_G(verbosity) >= (v) && !VLD_G(webshell_test)) { vld_printf(stderr, args, (x)); }
+#define VLD_PRINT2(v,args,x,y) if (VLD_G(verbosity) >= (v) && !VLD_G(webshell_test)) { vld_printf(stderr, args, (x), (y)); }
 
 #if PHP_VERSION_ID >= 70000
 # define ZHASHKEYSTR(k) ((k)->key->val)
