@@ -576,25 +576,6 @@ char *vld_get_zval_string(ZVAL_VALUE_TYPE value) {
 
 int check_znode_var(int id, int limit) {
 //	TODO: Use BFS to check	all node, and how to set the bonder?
-//	// return :
-//	// 		res = 2 : reachable var
-//	// 		res = 1 : concat var
-//	//		res = 0 : normal
-//	//		res = -1 : loop or check limit exceed
-//	if (limit <= 0) {
-//		return  -1;
-//	}
-//	if (VLD_G(var_s).stack[id].is_reachable == 1) {
-//		return 2;
-//	}
-//	if (!strcmp(VLD_G(var_s).stack[id].from_name, "CONCAT")) {
-//		return 1;
-//	}
-//	if (VLD_G(var_s).stack[id].from_var_op1 > 0) {
-//		check_znode_var(VLD_G(var_s).stack[id].from_var_op1, limit - 1);
-//	} else
-//
-//	check_znode_var(VLD_G(var_s).stack[id].from_var_op2, limit - 1);
     if (!strcmp(VLD_G(var_s).stack[id].from_name, "CONCAT")) {
         return 1;
     } else {
@@ -711,6 +692,9 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
         int
         value_var_op2 = get_znode_var(op2_type, op.op2, base_address, nr
         TSRMLS_CC);
+
+//        vld_printf(stderr, "{%3d/%3d/%3d}", value_var_res, value_var_op1, value_var_op2);
+
         if (value_var_res >= 0) {
             VLD_G(var_s).stack[value_var_res].from_name = opcodes[op.opcode].name;
             VLD_G(var_s).stack[value_var_res].from_op1 = value_var_op1;
@@ -722,14 +706,22 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
                 VLD_G(var_s).stack[value_var_op1].from_op1 = value_var_op2;
                 VLD_G(var_s).stack[value_var_op1].is_reachable = VLD_G(var_s).stack[value_var_op2].is_reachable;
             }
-            vld_printf(stderr, "{%d}", VLD_G(var_s).stack[value_var_op1].is_reachable);
+//            vld_printf(stderr, "{R-%d}", VLD_G(var_s).stack[value_var_op1].is_reachable);
+
+        } else if (!strcmp(opcodes[op.opcode].name, "CONCAT")) {
+            if (value_var_op1 >= 0) {
+                VLD_G(var_s).stack[value_var_res].from_op1 = value_var_op1;
+                VLD_G(var_s).stack[value_var_res].from_op2 = value_var_op2;
+                VLD_G(var_s).stack[value_var_res].is_reachable = 1;
+            }
+//            vld_printf(stderr, "{R-%d}", VLD_G(var_s).stack[value_var_res].is_reachable);
 
         } else if (!strcmp(opcodes[op.opcode].name, "FETCH_DIM_R")) {
             if (value_var_op1 >= 0) {
                 VLD_G(var_s).stack[value_var_res].from_op1 = value_var_op1;
                 VLD_G(var_s).stack[value_var_res].is_reachable = VLD_G(var_s).stack[value_var_op1].is_reachable;
             }
-            vld_printf(stderr, "{%d}", VLD_G(var_s).stack[value_var_res].is_reachable);
+//            vld_printf(stderr, "{R-%d}", VLD_G(var_s).stack[value_var_res].is_reachable);
 
         } else if (!strcmp(opcodes[op.opcode].name, "FETCH_R")) {
             if (value_var_op1 >= 0) {
@@ -747,10 +739,12 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
                     VLD_G(var_s).stack[value_var_res].is_reachable = -1;
                 }
             }
-            vld_printf(stderr, "{%d}", VLD_G(var_s).stack[value_var_res].is_reachable);
+//            vld_printf(stderr, "{R-%d}", VLD_G(var_s).stack[value_var_res].is_reachable);
 
         } else if (!strcmp(opcodes[op.opcode].name, "INIT_DYNAMIC_CALL")) {
-            VLD_G(risk_num)++;
+            if (VLD_G(var_s).stack[value_var_op2].is_reachable == 1) {
+                VLD_G(risk_num)++;
+            }
 
         } else if (!strcmp(opcodes[op.opcode].name, "INCLUDE_OR_EVAL") && op.extended_value == ZEND_EVAL) {
             VLD_G(risk_num)++;
@@ -758,7 +752,7 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
         } else if (!strcmp(opcodes[op.opcode].name, "SEND_VAR")) {
             if (!strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "assert") ||
                 !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "system")) {
-                vld_printf(stderr, "{@%d}", value_var_op1);
+//                vld_printf(stderr, "{@%d}", value_var_op1);
                 if (VLD_G(var_s).stack[value_var_op1].is_reachable == 1) {
                     VLD_G(risk_num)++;
                 }
@@ -766,7 +760,7 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
 
         } else if (!strcmp(opcodes[op.opcode].name, "CAST")) {
             if (!strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "shell_exec")) {
-                vld_printf(stderr, "{@%d}", value_var_op1);
+//                vld_printf(stderr, "{@%d}", value_var_op1);
                 if (VLD_G(var_s).stack[value_var_op1].is_reachable == 1) {
                     VLD_G(risk_num)++;
                 }
