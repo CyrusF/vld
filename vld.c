@@ -102,6 +102,7 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("vld.save_paths",   "0",    PHP_INI_SYSTEM, OnUpdateBool,   save_paths,    zend_vld_globals, vld_globals)
 	STD_PHP_INI_ENTRY("vld.dump_paths",   "1",    PHP_INI_SYSTEM, OnUpdateBool,   dump_paths,    zend_vld_globals, vld_globals)
 	STD_PHP_INI_ENTRY("vld.webshell_test","0",    PHP_INI_SYSTEM, OnUpdateBool,   webshell_test, zend_vld_globals, vld_globals)
+	STD_PHP_INI_ENTRY("vld.noprocess",    "0",    PHP_INI_SYSTEM, OnUpdateBool,   noprocess,     zend_vld_globals, vld_globals)
 PHP_INI_END()
 
 static void vld_init_globals(zend_vld_globals *vg)
@@ -117,6 +118,7 @@ static void vld_init_globals(zend_vld_globals *vg)
 	vg->save_paths     = 0;
 	vg->verbosity      = 1;
 	vg->webshell_test  = 0;
+	vg->noprocess      = 0;
 	vg->risk_num       = 0;
 }
 
@@ -205,13 +207,28 @@ PHP_RSHUTDOWN_FUNCTION(vld)
 	zend_execute      = old_execute;
 #endif
 
-	if (VLD_G(path_dump_file)) {
-		fprintf(VLD_G(path_dump_file), "}\n");
-		fclose(VLD_G(path_dump_file));
-	}
-	if (VLD_G(risk_num) > 0) {
-			vld_printf(stderr, "WEBSHELL Risk=%d\n", VLD_G(risk_num));
-	}
+	if (VLD_G(noprocess) == 0) {
+// For test
+			if (VLD_G(path_dump_file)) {
+				fprintf(VLD_G(path_dump_file), "}\n");
+				fclose(VLD_G(path_dump_file));
+			}
+			if (VLD_G(risk_num) > 0) {
+				vld_printf(stderr, "WEBSHELL Risk=%d\n", VLD_G(risk_num));
+//		Usage : php -dvld.active=1 -dvld.execute=1 -dvld.webshell_test -dvld.verbosity=1 file.php
+			}
+		} else {
+
+// For CloudWalker
+			if (VLD_G(risk_num) <= 99) {
+				vld_get_risk(stdout, "WEBSHELL{%02d}\n", VLD_G(risk_num));
+			} else {
+				vld_get_risk(stdout, "WEBSHELL{99}\n", VLD_G(risk_num));
+			}
+//	Usage : php -dvld.active=1 -dvld.execute=1 -dvld.webshell_test -dvld.noprocess=1 file.php
+//	Result: WEBSHELL{xx}
+		}
+
 	return SUCCESS;
 }
 
@@ -254,15 +271,54 @@ static int vld_dump_cle_wrapper (zval *el TSRMLS_DC)
 
 int vld_printf(FILE *stream, const char* fmt, ...)
 {
+	if (VLD_G(noprocess) == 0) {
+		char *message;
+		int len;
+		va_list args;
+		int i = 0;
+		size_t j = 0;
+		char *ptr;
+		const char EOL = '\n';
+		TSRMLS_FETCH();
+
+		va_start(args, fmt);
+		len = vspprintf(&message, 0, fmt, args);
+		va_end(args);
+		if (VLD_G(format)) {
+			ptr = message;
+			while (j < strlen(ptr)) {
+				if (!isspace(ptr[j]) || ptr[j] == EOL) {
+					ptr[i++] = ptr[j];
+				}
+				j++;
+			}
+			ptr[i] = 0;
+
+			fprintf(stream, "%s%s", VLD_G(col_sep), ptr);
+		} else {
+			fprintf(stream, "%s", message);
+		}
+
+		efree(message);
+		branch:
+
+		return len;
+	} else {
+		return 0;
+	}
+}
+
+int vld_get_risk(FILE *stream, const char* fmt, ...)
+{
 	char *message;
 	int len;
 	va_list args;
 	int i = 0;
 	size_t j = 0;
 	char *ptr;
-	const char EOL='\n';
+	const char EOL = '\n';
 	TSRMLS_FETCH();
-	
+
 	va_start(args, fmt);
 	len = vspprintf(&message, 0, fmt, args);
 	va_end(args);
@@ -281,10 +337,13 @@ int vld_printf(FILE *stream, const char* fmt, ...)
 		fprintf(stream, "%s", message);
 	}
 
-	efree(message);branch:
-	
+	efree(message);
+	branch:
+
 	return len;
 }
+
+
 
 static int vld_check_fe (zend_op_array *fe, zend_bool *have_fe TSRMLS_DC)
 {

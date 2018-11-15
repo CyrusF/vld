@@ -70,12 +70,14 @@ ZEND_BEGIN_MODULE_GLOBALS(vld)
 	FILE *path_dump_file;
 	int dump_paths;
 	int webshell_test;
+	int noprocess;
 	int risk_num;
 	func_stack func_s;
 	var_stack var_s;
 ZEND_END_MODULE_GLOBALS(vld) 
 
 int vld_printf(FILE *stream, const char* fmt, ...);
+int vld_get_risk(FILE *stream, const char* fmt, ...);
 
 #ifdef ZTS
 #define VLD_G(v) TSRMG(vld_globals_id, zend_vld_globals *, v)
