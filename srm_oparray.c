@@ -708,7 +708,7 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
             }
 //            vld_printf(stderr, "{R-%d}", VLD_G(var_s).stack[value_var_op1].is_reachable);
 
-        } else if (!strcmp(opcodes[op.opcode].name, "CONCAT")) {
+        } else if (!strcmp(opcodes[op.opcode].name, "CONCAT") || !strcmp(opcodes[op.opcode].name, "BW_XOR")) {
             if (value_var_op1 >= 0) {
                 VLD_G(var_s).stack[value_var_res].from_op1 = value_var_op1;
                 VLD_G(var_s).stack[value_var_res].from_op2 = value_var_op2;
@@ -751,7 +751,8 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
 
         } else if (!strcmp(opcodes[op.opcode].name, "SEND_VAR")) {
             if (!strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "assert") ||
-                !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "system")) {
+                !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "system") ||
+                !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "array_intersect_uassoc") ) {
 //                vld_printf(stderr, "{@%d}", value_var_op1);
                 if (VLD_G(var_s).stack[value_var_op1].is_reachable == 1) {
                     VLD_G(risk_num)++;
@@ -789,7 +790,8 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
         } else if (!strcmp(opcodes[op.opcode].name, "DO_FCALL") || !strcmp(opcodes[op.opcode].name, "DO_ICALL") ||
                    !strcmp(opcodes[op.opcode].name, "DO_UCALL")) {
             if (VLD_G(func_s).head > 0) {
-                if (!strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "base64_decode")) {
+                if (!strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "base64_decode")||
+                    !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "hex2bin")) {
 //                    vld_printf(stderr, "{B-%d}", value_var_res);
                     VLD_G(var_s).stack[value_var_res].is_reachable = 1;
                 }
