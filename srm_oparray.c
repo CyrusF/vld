@@ -789,6 +789,10 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
         } else if (!strcmp(opcodes[op.opcode].name, "DO_FCALL") || !strcmp(opcodes[op.opcode].name, "DO_ICALL") ||
                    !strcmp(opcodes[op.opcode].name, "DO_UCALL")) {
             if (VLD_G(func_s).head > 0) {
+                if (!strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "base64_decode")) {
+//                    vld_printf(stderr, "{B-%d}", value_var_res);
+                    VLD_G(var_s).stack[value_var_res].is_reachable = 1;
+                }
                 VLD_G(func_s).stack[VLD_G(func_s).head].name = "";
                 VLD_G(func_s).head--;
             }
