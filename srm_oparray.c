@@ -700,6 +700,7 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
             VLD_G(var_s).stack[value_var_res].from_op1 = value_var_op1;
             VLD_G(var_s).stack[value_var_res].from_op2 = value_var_op2;
         }
+//        vld_printf(stderr, "{V-%d/%d/%d}", value_var_res, value_var_op1, value_var_op2);
 
         if (!strcmp(opcodes[op.opcode].name, "ASSIGN")) {
             if (value_var_op2 >= 0) {
@@ -750,9 +751,10 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
             VLD_G(risk_num)++;
 
         } else if (!strcmp(opcodes[op.opcode].name, "SEND_VAR")) {
-            if (!strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "assert") ||
+            if (VLD_G(func_s).stack[VLD_G(func_s).head].name && (
+                !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "assert") ||
                 !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "system") ||
-                !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "array_intersect_uassoc") ) {
+                !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "array_intersect_uassoc"))) {
 //                vld_printf(stderr, "{@%d}", value_var_op1);
                 if (VLD_G(var_s).stack[value_var_op1].is_reachable == 1) {
                     VLD_G(risk_num)++;
@@ -760,8 +762,10 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
             }
 
         } else if (!strcmp(opcodes[op.opcode].name, "CAST")) {
-            if (!strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "shell_exec")) {
-//                vld_printf(stderr, "{@%d}", value_var_op1);
+            vld_printf(stderr, "cast!");
+            if (VLD_G(func_s).stack[VLD_G(func_s).head].name &&
+                !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "shell_exec")) {
+                vld_printf(stderr, "{@%d}", value_var_op1);
                 if (VLD_G(var_s).stack[value_var_op1].is_reachable == 1) {
                     VLD_G(risk_num)++;
                 }
@@ -792,7 +796,7 @@ void vld_dump_op(int nr, zend_op *op_ptr, unsigned int base_address, int notdead
             if (VLD_G(func_s).head > 0) {
                 if (!strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "base64_decode")||
                     !strcmp(VLD_G(func_s).stack[VLD_G(func_s).head].name, "hex2bin")) {
-//                    vld_printf(stderr, "{B-%d}", value_var_res);
+                    vld_printf(stderr, "{B-%d}", value_var_res);
                     VLD_G(var_s).stack[value_var_res].is_reachable = 1;
                 }
                 VLD_G(func_s).stack[VLD_G(func_s).head].name = "";
