@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"os"
 	"path/filepath"
 //	"fmt"
@@ -48,21 +49,27 @@ func runCommandWithTimeout(timeout int, command string, args ...string) (stdout,
 	return
 }
 
-func getTaintResult(timeout int, command string, args ...string) {
+func getTaintResult(timeout int, command string, args ...string) (webshellRisk int){
 	_, resultErr, isKilled, err := runCommandWithTimeout(timeout, command, args...)
 //	log.Print(fmt.Sprintf(`Run: %s %s`, command, strings.Join(args, "/")))
 //	log.Print("Is Killed: ", isKilled)
 //	log.Print("Res: \n", resultOut)
 //	log.Print("Err: \n", resultErr)
+	webshellRisk = 0
 	if isKilled {
-		log.Print("Res: WEBSHELL{00} \t\t\t (Timeout)")
+		webshellRisk = -1
 	} else {
-		if len(resultErr) >= 12 {
-			log.Print("Res: ", resultErr[len(resultErr)-12:])
+		if len(resultErr) >= 12 && resultErr[len(resultErr)-12:len(resultErr)-4] == "WEBSHELL" {
+			webshellRiskStr := resultErr[len(resultErr)-3:len(resultErr)-1]
+			webshellRisk, _ = strconv.Atoi(webshellRiskStr)
 		} else {
-			log.Printf("Res: WEBSHELL{00} \t\t\t (Error - %s)", err)
+			webshellRisk = -1
+			if (err != nil) {
+				log.Print(err)
+			}
 		}
 	}
+	return
 }
 
 func walk(path string, info os.FileInfo, _ error) error {
@@ -75,8 +82,15 @@ func walk(path string, info os.FileInfo, _ error) error {
 		strings.ToLower(filepath.Ext(path)) != ".bak" {
 		return nil
 	}
-	log.Print("Testing", path)
-	getTaintResult(5000, "php", "-dvld.active=1", "-dvld.execute=1", "-dvld.webshell_test", "-dvld.verbosity=1", "-dvld.noprocess=1", path)
+	res := getTaintResult(5000, "php", "-dvld.active=1", "-dvld.execute=1", "-dvld.webshell_test", "-dvld.verbosity=1", "-dvld.noprocess=1", path)
+	switch res {
+		case -1:
+			log.Print("Timeout\t", path)
+		case -2:
+			log.Print("Error\t", path)	
+		default:
+			log.Printf("Risk=%d \t%s", res, path)
+	}
 	return nil
 }
 
