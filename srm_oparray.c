@@ -576,7 +576,8 @@ char *vld_get_zval_string(ZVAL_VALUE_TYPE value) {
 
 int check_znode_var(int id, int limit) {
 //	TODO: Use BFS to check	all node, and how to set the bonder?
-    if (!strcmp(VLD_G(var_s).stack[id].from_name, "CONCAT")) {
+    if (VLD_G(var_s).stack[id].from_name &&
+        !strcmp(VLD_G(var_s).stack[id].from_name, "CONCAT")) {
         return 1;
     } else {
         return 0;
