@@ -63,3 +63,4 @@ tests/*.log
 tests/*.sh
 tests/*.mem
 
+TaintEngine/TaintEngine
