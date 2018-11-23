@@ -209,25 +209,24 @@ PHP_RSHUTDOWN_FUNCTION(vld)
 
 	if (VLD_G(noprocess) == 0) {
 // For test
-			if (VLD_G(path_dump_file)) {
-				fprintf(VLD_G(path_dump_file), "}\n");
-				fclose(VLD_G(path_dump_file));
-			}
-			if (VLD_G(risk_num) > 0) {
-				vld_printf(stderr, "WEBSHELL Risk=%d\n", VLD_G(risk_num));
+        if (VLD_G(path_dump_file)) {
+            fprintf(VLD_G(path_dump_file), "}\n");
+            fclose(VLD_G(path_dump_file));
+        }
+        if (VLD_G(risk_num) > 0) {
+            vld_printf(stderr, "WEBSHELL Risk=%d\n", VLD_G(risk_num));
 //		Usage : php -dvld.active=1 -dvld.execute=1 -dvld.webshell_test -dvld.verbosity=1 file.php
-			}
-		} else {
-
+        }
+	} else {
 // For CloudWalker
-			if (VLD_G(risk_num) <= 99) {
-				vld_get_risk(stdout, "WEBSHELL{%02d}\n", VLD_G(risk_num));
-			} else {
-				vld_get_risk(stdout, "WEBSHELL{99}\n", VLD_G(risk_num));
-			}
+        if (VLD_G(risk_num) <= 99) {
+            vld_get_risk(stderr, "WEBSHELL{%02d}\n", VLD_G(risk_num));
+        } else {
+            vld_get_risk(stderr, "WEBSHELL{99}\n", VLD_G(risk_num));
+        }
 //	Usage : php -dvld.active=1 -dvld.execute=1 -dvld.webshell_test -dvld.noprocess=1 file.php
 //	Result: WEBSHELL{xx}
-		}
+	}
 
 	return SUCCESS;
 }
